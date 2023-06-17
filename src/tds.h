@@ -1,11 +1,12 @@
-#ifndef tds_H
-#define tds_H
+#ifndef TDS_H
+#define TDS_H
 
 #include <Arduino.h>
 
-class tds{
+class TDS{
     public:
-    tds(uint8_t pin, double vref, double aref);
+    TDS(uint8_t pin, double vref, double aref);
+    ~TDS();
     void begin(int baudrate);
     int getMedianNum(int bArray[], int iFilterLen);
     float tdsValue();
