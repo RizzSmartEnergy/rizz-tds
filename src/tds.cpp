@@ -1,4 +1,4 @@
-#include "tds.h"
+#include "TDS.h"
 
 #define SCOUNT 30
 
@@ -10,21 +10,25 @@ float tdsval = 0;
 float averageVoltage = 0;
 float temperature = 25;
 
-tds::tds(uint8_t pin, double vref, double aref)
+TDS::TDS(uint8_t pin, double vref, double aref)
 {
   _pin = pin;
   _vref = vref;
   _aref = aref;
 }
 
-void tds::begin(int baudrate)
+TDS::~TDS()
+{
+}
+
+void TDS::begin(int baudrate)
 {
   _baudrate = baudrate;
   Serial.begin(_baudrate);
   pinMode(_pin, INPUT);
 }
 
-int tds::getMedianNum(int bArray[], int iFilterLen)
+int TDS::getMedianNum(int bArray[], int iFilterLen)
 {
   int bTab[iFilterLen];
   for (byte i = 0; i < iFilterLen; i++)
@@ -48,7 +52,7 @@ int tds::getMedianNum(int bArray[], int iFilterLen)
   return bTemp;
 }
 
-float tds::tdsValue()
+float TDS::tdsValue()
 {
   static unsigned long analogSampleTimepoint = millis();
   if (millis() - analogSampleTimepoint > 40U)
@@ -78,7 +82,7 @@ float tds::tdsValue()
   return tdsval;
 }
 
-void tds::print(int time)
+void TDS::print(int time)
 {
   _time = time;
   Serial.print("TDS Value:");
