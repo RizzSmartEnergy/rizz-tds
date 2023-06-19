@@ -28,6 +28,14 @@ void TDS::begin(int baudrate)
   pinMode(_pin, INPUT);
 }
 
+void TDS::setTemperature(float temp){
+  _temp = temp;
+}
+
+void TDS::getTemperature(){
+  return _temp;
+}
+
 int TDS::getMedianNum(int bArray[], int iFilterLen)
 {
   int bTab[iFilterLen];
@@ -74,7 +82,7 @@ float TDS::tdsValue()
     {
       analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
       averageVoltage = getMedianNum(analogBufferTemp, SCOUNT) * _vref / _aref;
-      float compensationCoefficient = 1.0 + 0.02 * (temperature - 25.0);
+      float compensationCoefficient = 1.0 + 0.02 * (_temp - 25.0);
       float compensationVoltage = averageVoltage / compensationCoefficient;
       tdsval = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage - 255.86 * compensationVoltage * compensationVoltage + 857.39 * compensationVoltage) * 0.5;
     }
