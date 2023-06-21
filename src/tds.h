@@ -10,8 +10,11 @@ class TDS{
     void begin(int baudrate);
     void setTemperature(float temp);
     void getTemperature();
+    float getVoltageTDS();
+    float getAnalogTDS();
     int getMedianNum(int bArray[], int iFilterLen);
-    float tdsValue();
+    float getEC();
+    float getTDS();
     void print(int time);
 
     private:
