@@ -6,9 +6,8 @@ int analogBuffer[SCOUNT];
 int analogBufferTemp[SCOUNT];
 int analogBufferIndex = 0;
 int copyIndex = 0;
-float tdsval = 0;
+float ecval = 0;
 float averageVoltage = 0;
-float temperature = 25;
 
 TDS::TDS(uint8_t pin, double vref, double aref)
 {
@@ -36,6 +35,14 @@ void TDS::getTemperature(){
   return _temp;
 }
 
+float TDS::getAnalogTDS(){
+  return analogRead(_pin);
+}
+
+float TDS::getVoltageTDS(){
+  return (_vref * analogRead(_pin) / _aref);
+}
+
 int TDS::getMedianNum(int bArray[], int iFilterLen)
 {
   int bTab[iFilterLen];
@@ -60,7 +67,7 @@ int TDS::getMedianNum(int bArray[], int iFilterLen)
   return bTemp;
 }
 
-float TDS::tdsValue()
+float TDS::getEC()
 {
   static unsigned long analogSampleTimepoint = millis();
   if (millis() - analogSampleTimepoint > 40U)
@@ -82,19 +89,23 @@ float TDS::tdsValue()
     {
       analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
       averageVoltage = getMedianNum(analogBufferTemp, SCOUNT) * _vref / _aref;
-      float compensationCoefficient = 1.0 + 0.02 * (_temp - 25.0);
-      float compensationVoltage = averageVoltage / compensationCoefficient;
-      tdsval = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage - 255.86 * compensationVoltage * compensationVoltage + 857.39 * compensationVoltage) * 0.5;
+      float compensationFactor = 1.0 + 0.02 * (_temp - 25.0);
+      float compensationVoltage = averageVoltage / compensationFactor;
+      ecval = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage - 255.86 * compensationVoltage * compensationVoltage + 857.39 * compensationVoltage) * 0.5;
     }
   }
-  return tdsval;
+  return ecval;
+}
+
+float TDS::getTDS(){
+  return getEC()*0.5;
 }
 
 void TDS::print(int time)
 {
   _time = time;
   Serial.print("TDS Value:");
-  Serial.print(tdsValue(), 0);
+  Serial.print(getTDS(), 0);
   Serial.println("ppm");
   delay(_time);
 }
