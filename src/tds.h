@@ -15,11 +15,12 @@ class TDS{
     int getMedianNum(int bArray[], int iFilterLen);
     float getEC();
     float getTDS();
-    void print(int time);
+    float getResistivity();
+    void print(int delay_time);
 
     private:
     uint8_t _pin;
-    int _baudrate, _time;
+    int _baudrate, _delay_time;
     double _vref, _aref;
     float _temp;
 };
