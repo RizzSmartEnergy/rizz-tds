@@ -91,7 +91,7 @@ float TDS::getEC()
       averageVoltage = getMedianNum(analogBufferTemp, SCOUNT) * _vref / _aref;
       float compensationFactor = 1.0 + 0.02 * (_temp - 25.0);
       float compensationVoltage = averageVoltage / compensationFactor;
-      ecval = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage - 255.86 * compensationVoltage * compensationVoltage + 857.39 * compensationVoltage) * 0.5;
+      ecval = (133.42 * compensationVoltage * compensationVoltage * compensationVoltage - 255.86 * compensationVoltage * compensationVoltage + 857.39 * compensationVoltage) * 1.2;
     }
   }
   return ecval;
@@ -101,11 +101,15 @@ float TDS::getTDS(){
   return getEC()*0.5;
 }
 
-void TDS::print(int time)
+float TDS::getResistivity(){
+  return 1/getEC();
+}
+
+void TDS::print(int delay_time)
 {
-  _time = time;
+  _delay_time = delay_time;
   Serial.print("TDS Value:");
   Serial.print(getTDS(), 0);
   Serial.println("ppm");
-  delay(_time);
+  delay(_delay_time);
 }
