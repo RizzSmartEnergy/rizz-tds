@@ -112,17 +112,17 @@ float TDS::getTDS()
 
 float TDS::getResistivity()
 {
-  return 1 / getEC();
+  return 1000 / getEC();
 }
 
 void TDS::getAllTDSData(int delay_time)
 {
   _delay_time = delay_time;
-  Serial.print("Temperature:\t" + String(getTemperature()) + "\t");
-  Serial.print("Input Analog:\t" + String(getAnalogTDS()) + "\t");
-  Serial.print("Input Voltage:\t" + String(getVoltageTDS()) + "\t");
-  Serial.print("EC:\t" + String(getEC()) + " mS/cm\t");
-  Serial.print("TDS:\t" + String(getTDS()) + " ppm\t");
-  Serial.println("Resistivity:\t" + String(getResistivity()) + " m.ohm.cm\t");
+  Serial.print("Temperature: " + String(getTemperature()) + "\t");
+  Serial.print("Input Analog: " + String(getAnalogTDS()) + "\t");
+  Serial.print("Input Voltage: " + String(getVoltageTDS()) + "\t");
+  Serial.print("EC: " + String(getEC()) + " mS/cm\t");
+  Serial.print("TDS: " + String(getTDS()) + " ppm\t");
+  Serial.println("Resistivity: " + String(getResistivity()) + " m.ohm.cm\t");
   delay(_delay_time);
 }
