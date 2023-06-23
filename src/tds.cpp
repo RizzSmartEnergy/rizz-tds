@@ -123,6 +123,6 @@ void TDS::getAllTDSData(int delay_time)
   Serial.print("Input Voltage: " + String(getVoltageTDS()) + "\t");
   Serial.print("EC: " + String(getEC()) + " µS/cm\t");
   Serial.print("TDS: " + String(getTDS()) + " ppm\t");
-  Serial.println("Resistivity: " + String(getResistivity()) + " MΩ.cm\t");
+  Serial.println("Resistivity: " + String(getResistivity()) + " kΩ.cm\t");
   delay(_delay_time);
 }
