@@ -12,5 +12,5 @@ void setup(){
 }
 
 void loop(){
-  sensor.print(1000); //delay time
+  sensor.getAllTDSData(1000); //delay time
 }
