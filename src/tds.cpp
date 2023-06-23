@@ -102,12 +102,12 @@ float TDS::samplingTDS()
 
 float TDS::getEC()
 {
-  return (133.42 * samplingTDS() * samplingTDS() * samplingTDS() - 255.86 * samplingTDS() * samplingTDS() + 857.39 * samplingTDS()) * 1.2;
+  return (133.42 * samplingTDS() * samplingTDS() * samplingTDS() - 255.86 * samplingTDS() * samplingTDS() + 857.39 * samplingTDS()) * 1.0;
 }
 
 float TDS::getTDS()
 {
-  return getEC() * 0.5;
+  return getEC() * 0.64;
 }
 
 float TDS::getResistivity()
@@ -123,6 +123,6 @@ void TDS::getAllTDSData(int delay_time)
   Serial.print("Input Voltage: " + String(getVoltageTDS()) + "\t");
   Serial.print("EC: " + String(getEC()) + " µS/cm\t");
   Serial.print("TDS: " + String(getTDS()) + " ppm\t");
-  Serial.println("Resistivity: " + String(getResistivity()) + " Ω.cm\t");
+  Serial.println("Resistivity: " + String(getResistivity()) + " kΩ.cm\t");
   delay(_delay_time);
 }
