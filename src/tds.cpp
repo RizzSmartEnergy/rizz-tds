@@ -44,7 +44,7 @@ float TDS::getAnalogTDS()
 
 float TDS::getVoltageTDS()
 {
-  return (_vref * analogRead(_pin) / _aref);
+  return (analogRead(_pin) * _vref / (1000 * _aref));
 }
 
 int TDS::getMedianTDS(int bArray[], int iFilterLen)
@@ -92,7 +92,7 @@ float TDS::samplingTDS()
     for (copyIndex = 0; copyIndex < SCOUNT; copyIndex++)
     {
       analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
-      averageVoltage = getMedianTDS(analogBufferTemp, SCOUNT) * _vref / _aref;
+      averageVoltage = getMedianTDS(analogBufferTemp, SCOUNT) * _vref / (1000 * _aref);
       float compensationFactor = 1.0 + 0.02 * (_temp - 25.0);
       compensatedVoltage = averageVoltage / compensationFactor;
     }
