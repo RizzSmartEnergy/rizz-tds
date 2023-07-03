@@ -8,9 +8,9 @@
 TDS sensor(SENSOR_PIN, VREF, AREF);
 
 void setup(){
-  sensor.begin(115200); //baudrate
+  sensor.begin(); //baudrate
 }
 
 void loop(){
-  sensor.getAllTDSData(1000); //delay time
+  sensor.getAllTDSData(); //delay time
 }

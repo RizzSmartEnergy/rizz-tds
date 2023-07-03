@@ -20,10 +20,8 @@ TDS::~TDS()
 {
 }
 
-void TDS::begin(int baudrate)
+void TDS::begin()
 {
-  _baudrate = baudrate;
-  Serial.begin(_baudrate);
   pinMode(_pin, INPUT);
 }
 
@@ -115,14 +113,12 @@ float TDS::getResistivity()
   return getEC() == 0 ? 0 : 1000 / getEC();
 }
 
-void TDS::getAllTDSData(int delay_time)
+void TDS::getAllTDSData()
 {
-  _delay_time = delay_time;
   Serial.print("Temperature: " + String(getTemperature()) + " | ");
   Serial.print("Input Analog: " + String(getAnalogTDS()) + " | ");
   Serial.print("Input Voltage: " + String(getVoltageTDS()) + " | ");
   Serial.print("EC: " + String(getEC()) + " µS/cm | ");
   Serial.print("TDS: " + String(getTDS()) + " ppm | ");
   Serial.println("Resistivity: " + String(getResistivity()) + " kΩ.cm");
-  delay(_delay_time);
 }

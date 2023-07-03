@@ -8,7 +8,7 @@ class TDS
 public:
     TDS(uint8_t pin, double vref, double aref);
     ~TDS();
-    void begin(int baudrate);
+    void begin();
     void setTemperature(float temp);
     float getTemperature();
     float getAnalogTDS();
@@ -18,13 +18,12 @@ public:
     float getEC();
     float getTDS();
     float getResistivity();
-    void getAllTDSData(int delay_time);
+    void getAllTDSData();
 
 private:
     uint8_t _pin;
     double _vref, _aref;
     float _temp;
-    int _baudrate, _delay_time;
 };
 
 #endif
