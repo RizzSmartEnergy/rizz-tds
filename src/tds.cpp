@@ -167,12 +167,13 @@ boolean TDS::serialDataTDS()
 
 void TDS::getAllTDSData()
 {
-  Serial.print("Temperature: " + String(getTemperature()) + " | ");
-  Serial.print("Input Analog: " + String(getAnalogTDS()) + " | ");
-  Serial.print("Input Voltage: " + String(getVoltageTDS()) + " | ");
+  Serial.print("Temp: " + String(getTemperature()) + " | ");
+  Serial.print("K Val: " + String(kValue) + " | ");
   Serial.print("EC: " + String(getEC()) + " µS/cm | ");
   Serial.print("TDS: " + String(getTDS()) + " ppm | ");
   Serial.println("Resistivity: " + String(getResistivity()) + " kΩ.cm");
+  Serial.print("Analog In: " + String(getAnalogTDS()) + " | ");
+  Serial.print("Voltage In: " + String(getVoltageTDS()) + " | ");
 }
 
 byte TDS::uartParsingTDS()
@@ -239,7 +240,7 @@ void TDS::calibrationEC(byte mode)
             if(finishCalEC)
             {
                EEPROM_write(kValueAddr, kValue);
-               Serial.print(F(">>>Calibration Successful,K Value Saved"));
+               Serial.print(F(">>>Calibration Successful, K Value Saved"));
             }
             else Serial.print(F(">>>Calibration Failed"));       
             Serial.println(F(", Exit Calibration Mode<<<"));
