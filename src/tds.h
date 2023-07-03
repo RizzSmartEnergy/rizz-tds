@@ -19,6 +19,10 @@ public:
     float getTDS();
     float getResistivity();
     void getAllTDSData();
+    byte uartParsingTDS();
+    void calibrationEC(byte mode);
+    void kCharacteristic();
+    void modeTDS();
 
 private:
     uint8_t _pin;
