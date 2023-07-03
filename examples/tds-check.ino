@@ -8,9 +8,12 @@
 TDS sensor(SENSOR_PIN, VREF, AREF);
 
 void setup(){
-  sensor.begin(); //baudrate
+  Serial.begin(115200);
+  sensor.begin();
 }
 
 void loop(){
-  sensor.getAllTDSData(); //delay time
+  sensor.setTemperature(25.0);
+  sensor.getAllTDSData();
+  delay(1000);
 }
