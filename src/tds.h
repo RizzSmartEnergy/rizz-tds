@@ -16,6 +16,7 @@ public:
     int getMedianTDS(int bArray[], int iFilterLen);
     float samplingTDS();
     float compensationFactor();
+    float getEC25();
     float getEC();
     float getTDS();
     float getResistivity();

@@ -13,8 +13,8 @@ float averageVoltage = 0;
 #define EEPROM_read(address, p)  {int i = 0; byte *pp = (byte*)&(p);for(; i < sizeof(p); i++) pp[i]=EEPROM.read(address+i);}
 #define kValueAddr 8
 #define ReceivedBufferLength 20
-char cmdReceivedBuffer[ReceivedBufferLength+1];   // store the serial cmd from the serial monitor
-byte cmdReceivedBufferIndex;
+char receivedBuffer[ReceivedBufferLength+1];   // store the serial cmd from the serial monitor
+byte receivedBufferIndex;
 
 float kValue;
 
@@ -102,8 +102,7 @@ float TDS::samplingTDS()
     {
       analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
       averageVoltage = getMedianTDS(analogBufferTemp, SCOUNT) * _vref / (1000 * _aref);
-      float compensationFactor = 1.0 + 0.02 * (_temp - 25.0);
-      compensatedVoltage = averageVoltage / compensationFactor;
+      compensatedVoltage = averageVoltage / compensationFactor();
     }
   }
   return compensatedVoltage;
@@ -113,9 +112,13 @@ float TDS::compensationFactor(){
   return (1.0 + 0.02 * (_temp - 25.0));
 }
 
+float TDS::getEC25(){
+  return (133.42 * samplingTDS() * samplingTDS() * samplingTDS() - 255.86 * samplingTDS() * samplingTDS() + 857.39 * samplingTDS());
+}
+
 float TDS::getEC()
 {
-  return (133.42 * samplingTDS() * samplingTDS() * samplingTDS() - 255.86 * samplingTDS() * samplingTDS() + 857.39 * samplingTDS()) * 1.0;
+  return getEC25() * kValue;
 }
 
 float TDS::getTDS()
@@ -145,18 +148,18 @@ boolean TDS::serialDataTDS()
   {   
     if (millis() - receivedTimeOut > 500U) 
     {
-      cmdReceivedBufferIndex = 0;
-      memset(cmdReceivedBuffer,0,(ReceivedBufferLength+1));
+      receivedBufferIndex = 0;
+      memset(receivedBuffer,0,(ReceivedBufferLength+1));
     }
     receivedTimeOut = millis();
     receivedChar = Serial.read();
-    if (receivedChar == '\n' || cmdReceivedBufferIndex==ReceivedBufferLength){
-		cmdReceivedBufferIndex = 0;
-		strupr(cmdReceivedBuffer);
+    if (receivedChar == '\n' || receivedBufferIndex==ReceivedBufferLength){
+		receivedBufferIndex = 0;
+		strupr(receivedBuffer);
 		return true;
     }else{
-      cmdReceivedBuffer[cmdReceivedBufferIndex] = receivedChar;
-      cmdReceivedBufferIndex++;
+      receivedBuffer[receivedBufferIndex] = receivedChar;
+      receivedBufferIndex++;
     }
   }
   return false;
@@ -176,18 +179,18 @@ void TDS::getAllTDSData()
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
-  if(strstr(cmdReceivedBuffer, "ENTER") != NULL) 
+  if(strstr(receivedBuffer, "ENTER") != NULL) 
       modeIndex = 1;
-  else if(strstr(cmdReceivedBuffer, "EXIT") != NULL) 
+  else if(strstr(receivedBuffer, "EXIT") != NULL) 
       modeIndex = 3;
-  else if(strstr(cmdReceivedBuffer, "CAL") != NULL)   
+  else if(strstr(receivedBuffer, "CAL") != NULL)   
       modeIndex = 2;
   return modeIndex;
 }
 
 void TDS::calibrationEC(byte mode)
 {
-    char *cmdReceivedBufferPtr;
+    char *receivedBufferPtr;
     static boolean ecCalibrationFinish = 0;
     static boolean enterCalibrationFlag = 0;
     float KValueTemp,rawECsolution;
@@ -208,21 +211,17 @@ void TDS::calibrationEC(byte mode)
       break;
      
       case 2:
-      cmdReceivedBufferPtr=strstr(cmdReceivedBuffer, "CAL");
-      cmdReceivedBufferPtr+=strlen("CAL");
-      rawECsolution = strtod(cmdReceivedBufferPtr,NULL)/(float)(0.5);//TdsFactor
-      rawECsolution = rawECsolution*(1.0+0.02*(getTemperature()-25.0));
+      receivedBufferPtr=strstr(receivedBuffer, "CAL");
+      receivedBufferPtr+=strlen("CAL");
+      rawECsolution = strtod(receivedBufferPtr,NULL)/(float)(0.5);//TdsFactor
+      rawECsolution = rawECsolution*compensationFactor();
       if(enterCalibrationFlag)
       {
-         // Serial.print("rawECsolution:");
-         // Serial.print(rawECsolution);
-         // Serial.print("  ecvalue:");
-         // Serial.println(ecValue);
           KValueTemp = rawECsolution/(133.42*samplingTDS()*samplingTDS()*samplingTDS() - 255.86*samplingTDS()*samplingTDS() + 857.39*samplingTDS());  //calibrate in the  buffer solution, such as 707ppm(1413us/cm)@25^c
           if((rawECsolution>0) && (rawECsolution<2000) && (KValueTemp>0.25) && (KValueTemp<4.0))
           {
               Serial.println();
-              Serial.print(F(">>>Confrim Successful,K:"));
+              Serial.print(F(">>>Confirm Successful, K:"));
               Serial.print(KValueTemp);
               Serial.println(F(", Send EXIT to Save and Exit<<<"));
               kValue =  KValueTemp;
@@ -230,7 +229,7 @@ void TDS::calibrationEC(byte mode)
           }
           else{
             Serial.println();
-            Serial.println(F(">>>Confirm Failed,Try Again<<<"));
+            Serial.println(F(">>>Confirm Failed, Try Again<<<"));
             Serial.println();
             ecCalibrationFinish = 0;
           }        
@@ -261,7 +260,7 @@ void TDS::kCharacteristic()
     EEPROM_read(kValueAddr, kValue);  
     if(EEPROM.read(kValueAddr)==0xFF && EEPROM.read(kValueAddr+1)==0xFF && EEPROM.read(kValueAddr+2)==0xFF && EEPROM.read(kValueAddr+3)==0xFF)
     {
-      kValue = 1.0;   // default value: K = 1.0
+      kValue = 1.0;
       EEPROM_write(kValueAddr, kValue);
     }
 }
