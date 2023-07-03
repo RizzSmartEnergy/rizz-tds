@@ -171,16 +171,16 @@ void TDS::getAllTDSData()
   Serial.print("K Val: " + String(kValue) + " | ");
   Serial.print("EC: " + String(getEC()) + " µS/cm | ");
   Serial.print("TDS: " + String(getTDS()) + " ppm | ");
-  Serial.println("Resistivity: " + String(getResistivity()) + " kΩ.cm");
+  Serial.print("Resistivity: " + String(getResistivity()) + " kΩ.cm | ");
   Serial.print("Analog In: " + String(getAnalogTDS()) + " | ");
-  Serial.print("Voltage In: " + String(getVoltageTDS()) + " | ");
+  Serial.println("Volt In: " + String(getVoltageTDS()) + " | ");
 }
 
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
   modeIndex = (strstr(receivedBuffer, "ENTER") != NULL) ? 1 :
-              (strstr(receivedBuffer, "CAL") != NULL) ? 2 :
+              (strstr(receivedBuffer, "CAL:") != NULL) ? 2 :
               (strstr(receivedBuffer, "EXIT") != NULL) ? 3 : 0;
   return modeIndex;
 }
@@ -208,8 +208,8 @@ void TDS::calibrationEC(byte mode)
       break;
      
       case 2:
-      receivedBufferPtr=strstr(receivedBuffer, "CAL");
-      receivedBufferPtr+=strlen("CAL");
+      receivedBufferPtr=strstr(receivedBuffer, "CAL:");
+      receivedBufferPtr+=strlen("CAL:");
       rawECsolution = strtod(receivedBufferPtr,NULL)/(float)(0.5);//TdsFactor
       rawECsolution = rawECsolution*compensationFactor();
       if(enterCalMode)
