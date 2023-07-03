@@ -26,7 +26,6 @@ public:
     void kCharacteristic();
     void run();
     void modeTDS();
-
     boolean serialDataTDS();
 
 private:

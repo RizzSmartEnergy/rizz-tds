@@ -165,7 +165,6 @@ boolean TDS::serialDataTDS()
   return false;
 }
 
-
 void TDS::getAllTDSData()
 {
   Serial.print("Temperature: " + String(getTemperature()) + " | ");
@@ -179,31 +178,28 @@ void TDS::getAllTDSData()
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
-  if(strstr(receivedBuffer, "ENTER") != NULL) 
-      modeIndex = 1;
-  else if(strstr(receivedBuffer, "EXIT") != NULL) 
-      modeIndex = 3;
-  else if(strstr(receivedBuffer, "CAL") != NULL)   
-      modeIndex = 2;
+  modeIndex = (strstr(receivedBuffer, "ENTER") != NULL) ? 1 :
+              (strstr(receivedBuffer, "CAL") != NULL) ? 2 :
+              (strstr(receivedBuffer, "EXIT") != NULL) ? 3 : 0;
   return modeIndex;
 }
 
 void TDS::calibrationEC(byte mode)
 {
     char *receivedBufferPtr;
-    static boolean ecCalibrationFinish = 0;
-    static boolean enterCalibrationFlag = 0;
+    static boolean finishCalEC = 0;
+    static boolean enterCalMode = 0;
     float KValueTemp,rawECsolution;
     switch(mode)
     {
       case 0:
-      if(enterCalibrationFlag)
+      if(enterCalMode)
          Serial.println(F("Command Error"));
       break;
       
       case 1:
-      enterCalibrationFlag = 1;
-      ecCalibrationFinish = 0;
+      enterCalMode = 1;
+      finishCalEC = 0;
       Serial.println();
       Serial.println(F(">>>Enter Calibration Mode<<<"));
       Serial.println(F(">>>Please put the probe into the standard buffer solution<<<"));
@@ -215,9 +211,9 @@ void TDS::calibrationEC(byte mode)
       receivedBufferPtr+=strlen("CAL");
       rawECsolution = strtod(receivedBufferPtr,NULL)/(float)(0.5);//TdsFactor
       rawECsolution = rawECsolution*compensationFactor();
-      if(enterCalibrationFlag)
+      if(enterCalMode)
       {
-          KValueTemp = rawECsolution/(133.42*samplingTDS()*samplingTDS()*samplingTDS() - 255.86*samplingTDS()*samplingTDS() + 857.39*samplingTDS());  //calibrate in the  buffer solution, such as 707ppm(1413us/cm)@25^c
+          KValueTemp = rawECsolution/getEC25();  //calibrate in the  buffer solution, such as 707ppm(1413us/cm)@25^c
           if((rawECsolution>0) && (rawECsolution<2000) && (KValueTemp>0.25) && (KValueTemp<4.0))
           {
               Serial.println();
@@ -225,31 +221,31 @@ void TDS::calibrationEC(byte mode)
               Serial.print(KValueTemp);
               Serial.println(F(", Send EXIT to Save and Exit<<<"));
               kValue =  KValueTemp;
-              ecCalibrationFinish = 1;
+              finishCalEC = 1;
           }
           else{
             Serial.println();
             Serial.println(F(">>>Confirm Failed, Try Again<<<"));
             Serial.println();
-            ecCalibrationFinish = 0;
+            finishCalEC = 0;
           }        
       }
       break;
 
         case 3:
-        if(enterCalibrationFlag)
+        if(enterCalMode)
         {
             Serial.println();
-            if(ecCalibrationFinish)
+            if(finishCalEC)
             {
                EEPROM_write(kValueAddr, kValue);
                Serial.print(F(">>>Calibration Successful,K Value Saved"));
             }
             else Serial.print(F(">>>Calibration Failed"));       
-            Serial.println(F(",Exit Calibration Mode<<<"));
+            Serial.println(F(", Exit Calibration Mode<<<"));
             Serial.println();
-            ecCalibrationFinish = 0;
-            enterCalibrationFlag = 0;
+            finishCalEC = 0;
+            enterCalMode = 0;
         }
         break;
     }
@@ -267,4 +263,5 @@ void TDS::kCharacteristic()
 
 void TDS::run(){
   samplingTDS();
+  modeTDS();
 }
