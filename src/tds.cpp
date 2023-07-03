@@ -31,7 +31,9 @@ TDS::~TDS()
 
 void TDS::begin()
 {
+  EEPROM.begin(4095);
   pinMode(_pin, INPUT);
+  kCharacteristic();
 }
 
 void TDS::setTemperature(float temp)
@@ -227,4 +229,10 @@ void TDS::kCharacteristic()
       kValue = 1.0;   // default value: K = 1.0
       EEPROM_write(kValueAddr, kValue);
     }
+
+    EEPROM.commit();
+}
+
+void TDS::run(){
+  samplingTDS();
 }

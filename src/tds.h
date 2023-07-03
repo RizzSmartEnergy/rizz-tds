@@ -22,6 +22,7 @@ public:
     byte uartParsingTDS();
     void calibrationEC(byte mode);
     void kCharacteristic();
+    void run();
     void modeTDS();
 
 private:
