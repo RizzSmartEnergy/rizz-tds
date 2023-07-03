@@ -15,6 +15,7 @@ public:
     float getVoltageTDS();
     int getMedianTDS(int bArray[], int iFilterLen);
     float samplingTDS();
+    float compensationFactor();
     float getEC();
     float getTDS();
     float getResistivity();
@@ -24,6 +25,8 @@ public:
     void kCharacteristic();
     void run();
     void modeTDS();
+
+    boolean serialDataTDS();
 
 private:
     uint8_t _pin;

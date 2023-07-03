@@ -109,6 +109,10 @@ float TDS::samplingTDS()
   return compensatedVoltage;
 }
 
+float TDS::compensationFactor(){
+  return (1.0 + 0.02 * (_temp - 25.0));
+}
+
 float TDS::getEC()
 {
   return (133.42 * samplingTDS() * samplingTDS() * samplingTDS() - 255.86 * samplingTDS() * samplingTDS() + 857.39 * samplingTDS()) * 1.0;
@@ -125,8 +129,39 @@ float TDS::getResistivity()
 }
 
 void TDS::modeTDS(){
-
+	if(serialDataTDS() > 0)
+        {
+          byte modeIndex = uartParsingTDS();
+            calibrationEC(modeIndex);  // if received serial cmd from the serial monitor, enter into the calibration mode
+        }
+    EEPROM.commit();
 }
+
+boolean TDS::serialDataTDS()
+{
+  char receivedChar;
+  static unsigned long receivedTimeOut = millis();
+  while (Serial.available()>0) 
+  {   
+    if (millis() - receivedTimeOut > 500U) 
+    {
+      cmdReceivedBufferIndex = 0;
+      memset(cmdReceivedBuffer,0,(ReceivedBufferLength+1));
+    }
+    receivedTimeOut = millis();
+    receivedChar = Serial.read();
+    if (receivedChar == '\n' || cmdReceivedBufferIndex==ReceivedBufferLength){
+		cmdReceivedBufferIndex = 0;
+		strupr(cmdReceivedBuffer);
+		return true;
+    }else{
+      cmdReceivedBuffer[cmdReceivedBufferIndex] = receivedChar;
+      cmdReceivedBufferIndex++;
+    }
+  }
+  return false;
+}
+
 
 void TDS::getAllTDSData()
 {
@@ -229,8 +264,6 @@ void TDS::kCharacteristic()
       kValue = 1.0;   // default value: K = 1.0
       EEPROM_write(kValueAddr, kValue);
     }
-
-    EEPROM.commit();
 }
 
 void TDS::run(){
