@@ -7,11 +7,11 @@
 TDS::TDS()
 {
     _pin = 32;
-    this->temperature = 25.0;
+    _temp = 25.0;
     _vref = 3.3;
     _aref = 4095.0;
-    this->kValueAddress = 8;
-    this->kValue = 1.0;
+    this->kValAddr = 8;
+    this->kVal = 1.0;
 }
 
 TDS::~TDS()
@@ -25,7 +25,11 @@ void TDS::setPin(int pin)
 
 void TDS::setTemperature(float temp)
 {
-	this->temperature = temp;
+	_temp = temp;
+}
+
+float TDS::getTemperature(){
+  return _temp;
 }
 
 void TDS::setVref(float vref)
@@ -40,7 +44,7 @@ void TDS::setAdcRange(float aref)
 
 void TDS::setKvalueAddress(int address)
 {
-      this->kValueAddress = address;
+      this->kValAddr = address;
 }
 
 void TDS::begin()
@@ -51,16 +55,31 @@ void TDS::begin()
 
 float TDS::getKvalue()
 {
-	return this->kValue;
+	return this->kVal;
+}
+
+float TDS::analogTDS(){
+  return analogRead(_pin);
+}
+
+float TDS::voltageTDS(){
+  return analogTDS() * _vref / _aref;
+}
+
+float TDS::compensatedVoltage(){
+  return (133.42*voltageTDS()*voltageTDS()*voltageTDS() - 255.86*voltageTDS()*voltageTDS() + 857.39*voltageTDS());
+}
+
+float TDS::funcx(){
+  return compensatedVoltage()*this->kVal;
+}
+
+float TDS::temperatureCompensation(){
+  return (1.0+0.02*(_temp-25.0));
 }
 
 void TDS::update()
 {
-	this->analogValue = analogRead(_pin);
-	this->voltage = this->analogValue/this->adcRange*this->aref;
-	this->ecValue=(133.42*this->voltage*this->voltage*this->voltage - 255.86*this->voltage*this->voltage + 857.39*this->voltage)*this->kValue;
-	this->ecValue25  =  this->ecValue / (1.0+0.02*(this->temperature-25.0));  //temperature compensation
-	this->tdsValue = ecValue25 * TdsFactor;
 	if(cmdSerialDataAvailable() > 0)
         {
             ecCalibration(cmdParse());  // if received serial cmd from the serial monitor, enter into the calibration mode
@@ -69,22 +88,22 @@ void TDS::update()
 
 float TDS::getTdsValue()
 {
-	return tdsValue;
+	return getEcValue() * TdsFactor;
 }
 
 float TDS::getEcValue()
 {
-      return ecValue25;
+      return funcx() / temperatureCompensation();
 }
 
 
 void TDS::readKValues()
 {
-    EEPROM_read(this->kValueAddress, this->kValue);  
-    if(EEPROM.read(this->kValueAddress)==0xFF && EEPROM.read(this->kValueAddress+1)==0xFF && EEPROM.read(this->kValueAddress+2)==0xFF && EEPROM.read(this->kValueAddress+3)==0xFF)
+    EEPROM_read(this->kValAddr, this->kVal);  
+    if(EEPROM.read(this->kValAddr)==0xFF && EEPROM.read(this->kValAddr+1)==0xFF && EEPROM.read(this->kValAddr+2)==0xFF && EEPROM.read(this->kValAddr+3)==0xFF)
     {
-      this->kValue = 1.0;   // default value: K = 1.0
-      EEPROM_write(this->kValueAddress, this->kValue);
+      this->kVal = 1.0;   // default value: K = 1.0
+      EEPROM_write(this->kValAddr, this->kVal);
     }
 }
 
@@ -151,21 +170,21 @@ void TDS::ecCalibration(byte mode)
       cmdReceivedBufferPtr=strstr(cmdReceivedBuffer, "CAL:");
       cmdReceivedBufferPtr+=strlen("CAL:");
       rawECsolution = strtod(cmdReceivedBufferPtr,NULL)/(float)(TdsFactor);
-      rawECsolution = rawECsolution*(1.0+0.02*(temperature-25.0));
+      rawECsolution = rawECsolution*temperatureCompensation();
       if(enterCalibrationFlag)
       {
          // Serial.print("rawECsolution:");
          // Serial.print(rawECsolution);
          // Serial.print("  ecvalue:");
          // Serial.println(ecValue);
-          KValueTemp = rawECsolution/(133.42*voltage*voltage*voltage - 255.86*voltage*voltage + 857.39*voltage);  //calibrate in the  buffer solution, such as 707ppm(1413us/cm)@25^c
+          KValueTemp = rawECsolution/compensatedVoltage();  //calibrate in the  buffer solution, such as 707ppm(1413us/cm)@25^c
           if((rawECsolution>0) && (rawECsolution<2000) && (KValueTemp>0.25) && (KValueTemp<4.0))
           {
               Serial.println();
               Serial.print(F(">>>Confrim Successful,K:"));
               Serial.print(KValueTemp);
               Serial.println(F(", Send EXIT to Save and Exit<<<"));
-              kValue =  KValueTemp;
+              kVal =  KValueTemp;
               ecCalibrationFinish = 1;
           }
           else{
@@ -183,7 +202,7 @@ void TDS::ecCalibration(byte mode)
             Serial.println();
             if(ecCalibrationFinish)
             {
-               EEPROM_write(kValueAddress, kValue);
+               EEPROM_write(kValAddr, kVal);
                Serial.print(F(">>>Calibration Successful,K Value Saved"));
             }
             else Serial.print(F(">>>Calibration Failed"));       
