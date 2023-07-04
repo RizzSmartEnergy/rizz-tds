@@ -20,9 +20,15 @@
 char receivedBuffer[ReceivedBufferLength + 1];
 byte receivedBufferIndex = 0;
 
+#define SCOUNT 30
+int analogBuffer[SCOUNT];
+int analogBufferTemp[SCOUNT];
+int analogBufferIndex = 0, copyIndex = 0;
+
 #define TDSFactor 0.64
 #define kValAddr 8
 float kVal;
+float avgVolt;
 
 TDS::TDS(uint8_t pin, double vref, double aref)
 {
@@ -66,9 +72,9 @@ boolean TDS::serialDataTDS()
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
-  modeIndex = (strstr(receivedBuffer, "ENTER") != NULL) ? 1 :
-              (strstr(receivedBuffer, "CAL:") != NULL) ? 2  :
-              (strstr(receivedBuffer, "EXIT") != NULL)   ? 3 : 0;
+  modeIndex = (strstr(receivedBuffer, "ENTER") != NULL) ? 1 : (strstr(receivedBuffer, "CAL:") != NULL) ? 2
+                                                          : (strstr(receivedBuffer, "EXIT") != NULL)   ? 3
+                                                                                                       : 0;
   return modeIndex;
 }
 
@@ -140,7 +146,7 @@ void TDS::calibrationEC(byte mode)
   }
 }
 
-int TDS::getMedianDO(int bArray[], int iFilterLen)
+int TDS::getMedianTDS(int bArray[], int iFilterLen)
 {
   int bTab[iFilterLen];
   for (byte i = 0; i < iFilterLen; i++)
@@ -196,12 +202,32 @@ float TDS::voltageTDS()
 
 float TDS::samplingTDS()
 {
-  return 0;
+  static unsigned long analogSampleTimepoint = millis();
+  if (millis() - analogSampleTimepoint > 40U)
+  {
+    analogSampleTimepoint = millis();
+    analogBuffer[analogBufferIndex] = analogTDS();
+    analogBufferIndex++;
+    if (analogBufferIndex == SCOUNT)
+      analogBufferIndex = 0;
+  }
+  static unsigned long printTimepoint = millis();
+  if (millis() - printTimepoint > 800U)
+  {
+    printTimepoint = millis();
+    for (copyIndex = 0; copyIndex < SCOUNT; copyIndex++)
+      analogBufferTemp[copyIndex] = analogBuffer[copyIndex];
+    avgVolt = getMedianTDS(analogBufferTemp, SCOUNT) * _vref / (1000 * _aref);
+  }
+  return avgVolt;
 }
 
 float TDS::compensatedVoltage()
 {
-  return (133.42 * voltageTDS() * voltageTDS() * voltageTDS() - 255.86 * voltageTDS() * voltageTDS() + 857.39 * voltageTDS());
+  // basic equation
+  // return (133.42 * voltageTDS() * voltageTDS() * voltageTDS() - 255.86 * voltageTDS() * voltageTDS() + 857.39 * voltageTDS());
+  // more stable
+  return (133.42 * samplingTDS() * samplingTDS() * samplingTDS() - 255.86 * samplingTDS() * samplingTDS() + 857.39 * samplingTDS());
 }
 
 float TDS::ec25()
