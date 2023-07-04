@@ -27,7 +27,7 @@ public:
     boolean serialDataTDS();
     byte uartParsingTDS();
     void calibrationEC(byte mode);
-    int getMedianDO(int bArray[], int iFilterLen);
+    int getMedianTDS(int bArray[], int iFilterLen);
     void characteristicKVal();
     void setTemperature(float temp);
     float getTemperature();
