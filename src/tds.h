@@ -25,17 +25,14 @@
 class TDS
 {
 public:
-    TDS();
-    ~TDS();
+    //TDS();
+    TDS(uint8_t pin, double vref, double aref);
+~TDS();
 
     void begin();  //initialization
-    void update(); //read and calculate
-    void setPin(int pin); 
+    void update();
     void setTemperature(float temp);  //set the temperature and execute temperature compensation
 float getTemperature();
-    void setVref(float vref);  //reference voltage on ADC, default 5.0V on Arduino UNO
-    void setAdcRange(float aref);  //1024 for 10bit ADC;4096 for 12bit ADC
-    void setKvalueAddress(int address); //set the EEPROM address to store the k value,default address:0x08
     float getKvalue();
 float analogTDS();
 
@@ -45,34 +42,21 @@ float compensatedVoltage();
 
 float funcx();
 
-// float ecValue();
-
 float temperatureCompensation();
  
     float getTdsValue();
     float getEcValue();
 
-private:
-    int _pin;
-    float _vref;  // default 5.0V on Arduino UNO
-    float _aref;
-    float _temp;
-    float temperature;
-    int kValAddr;     //the address of the K value stored in the EEPROM
-    char cmdReceivedBuffer[ReceivedBufferLength+1];   // store the serial cmd from the serial monitor
-    byte cmdReceivedBufferIndex;
- 
-    float kVal;      // k value of the probe,you can calibrate in buffer solution ,such as 706.5ppm(1413us/cm)@25^C 
-    float analogValue;
-    float voltage;
-    float ecValue; //before temperature compensation
-    float ecValue25; //after temperature compensation
-    float tdsValue;
 
     void readKValues();
     boolean cmdSerialDataAvailable();
     byte cmdParse();
     void ecCalibration(byte mode);
+private:
+    int _pin;
+    float _vref;  // default 5.0V on Arduino UNO
+    float _aref;
+    float _temp;
 };  
 
 #endif

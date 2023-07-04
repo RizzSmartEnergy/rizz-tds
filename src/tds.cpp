@@ -4,24 +4,29 @@
 #define EEPROM_write(address, p) {int i = 0; byte *pp = (byte*)&(p);for(; i < sizeof(p); i++) EEPROM.write(address+i, pp[i]);}
 #define EEPROM_read(address, p)  {int i = 0; byte *pp = (byte*)&(p);for(; i < sizeof(p); i++) pp[i]=EEPROM.read(address+i);}
 
-TDS::TDS()
+#define kValAddr 8
+float kVal;
+
+
+   /the address of the K value stored in the EEPROM
+    char cmdReceivedBuffer[ReceivedBufferLength+1];   // store the serial cmd from the serial monitor
+    byte cmdReceivedBufferIndex;
+
+TDS::TDS(uint8_t pin, double vref, double aref)
 {
-    _pin = 32;
-    _temp = 25.0;
-    _vref = 3.3;
-    _aref = 4095.0;
-    this->kValAddr = 8;
-    this->kVal = 1.0;
+    _pin = pin;
+    _vref = vref;
+    _aref = aref;
 }
 
 TDS::~TDS()
 {
 }
 
-void TDS::setPin(int pin)
-{
-	_pin = pin;
-}
+// void TDS::setPin(int pin)
+// {
+// 	_pin = pin;
+// }
 
 void TDS::setTemperature(float temp)
 {
@@ -32,20 +37,20 @@ float TDS::getTemperature(){
   return _temp;
 }
 
-void TDS::setVref(float vref)
-{
-	_vref = vref;
-}
+// void TDS::setVref(float vref)
+// {
+// 	_vref = vref;
+// }
 
-void TDS::setAdcRange(float aref)
-{
-      _aref = aref;
-}
+// void TDS::setAdcRange(float aref)
+// {
+//       _aref = aref;
+// }
 
-void TDS::setKvalueAddress(int address)
-{
-      this->kValAddr = address;
-}
+// void TDS::setKvalueAddress(int address)
+// {
+//       kValAddr = address;
+// }
 
 void TDS::begin()
 {
@@ -55,7 +60,7 @@ void TDS::begin()
 
 float TDS::getKvalue()
 {
-	return this->kVal;
+	return kVal;
 }
 
 float TDS::analogTDS(){
@@ -71,7 +76,7 @@ float TDS::compensatedVoltage(){
 }
 
 float TDS::funcx(){
-  return compensatedVoltage()*this->kVal;
+  return compensatedVoltage()*kVal;
 }
 
 float TDS::temperatureCompensation(){
@@ -99,11 +104,11 @@ float TDS::getEcValue()
 
 void TDS::readKValues()
 {
-    EEPROM_read(this->kValAddr, this->kVal);  
-    if(EEPROM.read(this->kValAddr)==0xFF && EEPROM.read(this->kValAddr+1)==0xFF && EEPROM.read(this->kValAddr+2)==0xFF && EEPROM.read(this->kValAddr+3)==0xFF)
+    EEPROM_read(kValAddr, kVal);  
+    if(EEPROM.read(kValAddr)==0xFF && EEPROM.read(kValAddr+1)==0xFF && EEPROM.read(kValAddr+2)==0xFF && EEPROM.read(kValAddr+3)==0xFF)
     {
-      this->kVal = 1.0;   // default value: K = 1.0
-      EEPROM_write(this->kValAddr, this->kVal);
+      kVal = 1.0;   // default value: K = 1.0
+      EEPROM_write(kValAddr, kVal);
     }
 }
 
