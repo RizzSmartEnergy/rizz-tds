@@ -19,54 +19,33 @@
 
 #include "Arduino.h"
 
-#define ReceivedBufferLength 15
-#define TdsFactor 0.5  // tds = ec / 2
-
 class TDS
 {
 public:
     TDS(uint8_t pin, double vref, double aref);
     ~TDS();
-    boolean cmdSerialDataAvailable();
-
-    byte cmdParse();
-
-    void ecCalibration(byte mode);
-
+    boolean serialDataTDS();
+    byte uartParsingTDS();
+    void calibrationEC(byte mode);
     int getMedianDO(int bArray[], int iFilterLen);
-
-    void readKValues();
-
+    void characteristicKVal();
     void setTemperature(float temp);
-
     float getTemperature();
-
     float analogTDS();
-
     float voltageTDS();
-
     float samplingTDS();
-
-    float getTdsValue();
-
-    float getEcValue();
-
-    float getKvalue();
-
     float compensatedVoltage();
-
-    float funcx();
-
+    float ec25();
     float temperatureCompensation();
-
-    void update();
-
+    float getKvalue();
+    float getEC();
+    float getTDS();
+    float getResistivity();
+    float getSalinity();
+    void modeTDS();
     void getAllTDSData();
-
     void begin();
-
     void run();
-
 private:
     int _pin;
     double _vref, _aref;
