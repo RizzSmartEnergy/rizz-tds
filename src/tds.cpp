@@ -8,7 +8,7 @@
 float kVal;
 
 
-   /the address of the K value stored in the EEPROM
+   //the address of the K value stored in the EEPROM
     char cmdReceivedBuffer[ReceivedBufferLength+1];   // store the serial cmd from the serial monitor
     byte cmdReceivedBufferIndex;
 
@@ -21,95 +21,6 @@ TDS::TDS(uint8_t pin, double vref, double aref)
 
 TDS::~TDS()
 {
-}
-
-// void TDS::setPin(int pin)
-// {
-// 	_pin = pin;
-// }
-
-void TDS::setTemperature(float temp)
-{
-	_temp = temp;
-}
-
-float TDS::getTemperature(){
-  return _temp;
-}
-
-// void TDS::setVref(float vref)
-// {
-// 	_vref = vref;
-// }
-
-// void TDS::setAdcRange(float aref)
-// {
-//       _aref = aref;
-// }
-
-// void TDS::setKvalueAddress(int address)
-// {
-//       kValAddr = address;
-// }
-
-void TDS::begin()
-{
-	pinMode(_pin,INPUT);
-	readKValues();
-}
-
-float TDS::getKvalue()
-{
-	return kVal;
-}
-
-float TDS::analogTDS(){
-  return analogRead(_pin);
-}
-
-float TDS::voltageTDS(){
-  return analogTDS() * _vref / _aref;
-}
-
-float TDS::compensatedVoltage(){
-  return (133.42*voltageTDS()*voltageTDS()*voltageTDS() - 255.86*voltageTDS()*voltageTDS() + 857.39*voltageTDS());
-}
-
-float TDS::funcx(){
-  return compensatedVoltage()*kVal;
-}
-
-float TDS::temperatureCompensation(){
-  return (1.0+0.02*(_temp-25.0));
-}
-
-void TDS::update()
-{
-	if(cmdSerialDataAvailable() > 0)
-        {
-            ecCalibration(cmdParse());  // if received serial cmd from the serial monitor, enter into the calibration mode
-        }
-}
-
-float TDS::getTdsValue()
-{
-	return getEcValue() * TdsFactor;
-}
-
-float TDS::getEcValue()
-{
-      return funcx() / temperatureCompensation();
-}
-
-
-void TDS::readKValues()
-{
-    EEPROM_read(kValAddr, kVal);  
-    if(EEPROM.read(kValAddr)==0xFF && EEPROM.read(kValAddr+1)==0xFF && EEPROM.read(kValAddr+2)==0xFF && EEPROM.read(kValAddr+3)==0xFF)
-    {
-      kVal = 1.0;   // default value: K = 1.0
-      EEPROM_write(kValAddr, kVal);
-    }
 }
 
 boolean TDS::cmdSerialDataAvailable()
@@ -136,6 +47,7 @@ boolean TDS::cmdSerialDataAvailable()
   }
   return false;
 }
+
 
 byte TDS::cmdParse()
 {
@@ -178,10 +90,6 @@ void TDS::ecCalibration(byte mode)
       rawECsolution = rawECsolution*temperatureCompensation();
       if(enterCalibrationFlag)
       {
-         // Serial.print("rawECsolution:");
-         // Serial.print(rawECsolution);
-         // Serial.print("  ecvalue:");
-         // Serial.println(ecValue);
           KValueTemp = rawECsolution/compensatedVoltage();  //calibrate in the  buffer solution, such as 707ppm(1413us/cm)@25^c
           if((rawECsolution>0) && (rawECsolution<2000) && (KValueTemp>0.25) && (KValueTemp<4.0))
           {
@@ -219,3 +127,96 @@ void TDS::ecCalibration(byte mode)
         break;
     }
 }
+
+int TDS::getMedianDO(int bArray[], int iFilterLen){}
+
+// void TDS::setPin(int pin)
+// {
+// 	_pin = pin;
+// }
+
+
+void TDS::readKValues()
+{
+    EEPROM_read(kValAddr, kVal);  
+    if(EEPROM.read(kValAddr)==0xFF && EEPROM.read(kValAddr+1)==0xFF && EEPROM.read(kValAddr+2)==0xFF && EEPROM.read(kValAddr+3)==0xFF)
+    {
+      kVal = 1.0;   // default value: K = 1.0
+      EEPROM_write(kValAddr, kVal);
+    }
+}
+
+void TDS::setTemperature(float temp)
+{
+	_temp = temp;
+}
+
+float TDS::getTemperature(){
+  return _temp;
+}
+
+float TDS::analogTDS(){
+  return analogRead(_pin);
+}
+
+float TDS::voltageTDS(){
+  return analogTDS() * _vref / _aref;
+}
+
+float TDS::samplingTDS(){
+
+}
+
+float TDS::getTdsValue()
+{
+	return getEcValue() * TdsFactor;
+}
+
+float TDS::getEcValue()
+{
+      return funcx() / temperatureCompensation();
+}
+float TDS::getKvalue()
+{
+	return kVal;
+}
+
+float TDS::compensatedVoltage(){
+  return (133.42*voltageTDS()*voltageTDS()*voltageTDS() - 255.86*voltageTDS()*voltageTDS() + 857.39*voltageTDS());
+}
+
+float TDS::funcx(){
+  return compensatedVoltage()*kVal;
+}
+
+float TDS::temperatureCompensation(){
+  return (1.0+0.02*(_temp-25.0));
+}
+
+
+void TDS::update()
+{
+	if(cmdSerialDataAvailable() > 0)
+        {
+            ecCalibration(cmdParse());  // if received serial cmd from the serial monitor, enter into the calibration mode
+        }
+        EEPROM.commit();
+}
+
+void TDS::getAllTDSData(){
+
+}
+
+void TDS::begin()
+{
+	pinMode(_pin,INPUT);
+	readKValues();
+}
+
+void TDS::run(){
+  samplingTDS();
+  update();
+}
+
+
+

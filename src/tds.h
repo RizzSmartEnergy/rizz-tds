@@ -25,37 +25,51 @@
 class TDS
 {
 public:
-    //TDS();
     TDS(uint8_t pin, double vref, double aref);
-~TDS();
+    ~TDS();
+    boolean cmdSerialDataAvailable();
 
-    void begin();  //initialization
-    void update();
-    void setTemperature(float temp);  //set the temperature and execute temperature compensation
-float getTemperature();
-    float getKvalue();
-float analogTDS();
+    byte cmdParse();
 
-float voltageTDS();
+    void ecCalibration(byte mode);
 
-float compensatedVoltage();
-
-float funcx();
-
-float temperatureCompensation();
- 
-    float getTdsValue();
-    float getEcValue();
-
+    int getMedianDO(int bArray[], int iFilterLen);
 
     void readKValues();
-    boolean cmdSerialDataAvailable();
-    byte cmdParse();
-    void ecCalibration(byte mode);
+
+    void setTemperature(float temp);
+
+    float getTemperature();
+
+    float analogTDS();
+
+    float voltageTDS();
+
+    float samplingTDS();
+
+    float getTdsValue();
+
+    float getEcValue();
+
+    float getKvalue();
+
+    float compensatedVoltage();
+
+    float funcx();
+
+    float temperatureCompensation();
+
+    void update();
+
+    void getAllTDSData();
+
+    void begin();
+
+    void run();
+
 private:
     int _pin;
-    float _vref;  // default 5.0V on Arduino UNO
-    float _aref;
+    double _vref, _aref;
     float _temp;
 };  
 
