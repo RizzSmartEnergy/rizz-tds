@@ -26,6 +26,9 @@ public:
     ~TDS();
     boolean serialDataTDS();
     byte uartParsingTDS();
+    boolean extInEnter(bool enterMode);
+    boolean extInCal(bool calMode);
+    boolean extInExit(bool exitMode);
     void calibrationEC(byte mode);
     int getMedianTDS(int bArray[], int iFilterLen);
     void characteristicKVal();
