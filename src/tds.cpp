@@ -72,25 +72,27 @@ boolean TDS::serialDataTDS()
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
-  if(strstr(cmdReceivedBuffer, "ENTER") != NULL || extInEnter() == true) 
-      modeIndex = 1;
-  else if(strstr(cmdReceivedBuffer, "CAL:") != NULL)   
-      modeIndex = 2;    
-  else if(strstr(cmdReceivedBuffer, "EXIT") != NULL || extInExit() == true) 
-      modeIndex = 3;                                                                               : 0;
+  if(strstr(receivedBuffer, "ENTER") != NULL || extInEnter(_enterCal))
+    {modeIndex = 1;}
+  else if(strstr(receivedBuffer, "CAL:") != NULL)   
+    {modeIndex = 2;} 
+  else if(strstr(receivedBuffer, "EXIT") != NULL || extInExit(_exitCal)) 
+    {modeIndex = 3;}
   return modeIndex;
 }
 
+
+
 boolean TDS::extInEnter(bool enterCal){
-  return enterCal;
+  return _enterCal = enterCal;
 }
 
 boolean TDS::extInCal(bool calMode){
-  return calMode;
+  return _calMode = calMode;
 }
 
 boolean TDS::extInExit(bool exitCal){
-  return exitCal;
+  return _exitCal = exitCal;
 }
 
 void TDS::calibrationEC(byte mode)
