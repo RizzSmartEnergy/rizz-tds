@@ -26,9 +26,10 @@ public:
     ~TDS();
     boolean serialDataTDS();
     byte uartParsingTDS();
-    boolean extInEnter(bool enterMode);
-    boolean extInCal(bool calMode);
-    boolean extInExit(bool exitMode);
+    boolean extInEnter(bool enterCal);
+    boolean extInCal(bool exitCal);
+    boolean extInExit(bool exitCal);
+    //void deleteMemory(bool *enterStat);
     void calibrationEC(byte mode);
     int getMedianTDS(int bArray[], int iFilterLen);
     void characteristicKVal();
@@ -53,6 +54,7 @@ private:
     int _pin;
     double _vref, _aref;
     float _temp;
+    bool _enterCal, _calMode, _exitCal;
 };  
 
 #endif
