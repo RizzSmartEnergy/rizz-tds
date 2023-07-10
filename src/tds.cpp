@@ -274,12 +274,12 @@ float TDS::getTDS()
 
 float TDS::getResistivity()
 {
-  return 1000 / getEC();
+  return (getEC() == 0)? 0 : 1000 / getEC();
 }
 
 float TDS::getSalinity()
 {
-  return 0;
+  return 1.4;
 }
 
 void TDS::modeTDS()
