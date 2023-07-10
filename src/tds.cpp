@@ -20,6 +20,10 @@
 char receivedBuffer[ReceivedBufferLength + 1];
 byte receivedBufferIndex = 0;
 
+#define ReceivedBufferLength2 20
+char receivedBuffer2[ReceivedBufferLength2 + 1];
+byte receivedBufferIndex2 = 0;
+
 #define SCOUNT 30
 int analogBuffer[SCOUNT];
 int analogBufferTemp[SCOUNT];
@@ -69,31 +73,56 @@ boolean TDS::serialDataTDS()
   return false;
 }
 
+// boolean TDS::serial2DataTDS()
+// {
+//   char receivedChar2;
+//   static unsigned long receivedTimeOut2 = millis();
+//   while (Serial2.available())
+//   {
+//     if (millis() - receivedTimeOut2 > 500U)
+//     {
+//       receivedBufferIndex2 = 0;
+//       memset(receivedBuffer2, 0, (ReceivedBufferLength2 + 1));
+//     }
+//     receivedTimeOut2 = millis();
+//     receivedChar2 = Serial2.read();
+//     if (receivedChar2 == 'ENTER' || receivedBufferIndex2 == ReceivedBufferLength2)
+//     {
+//       receivedBufferIndex2 = 0;
+//       return true;
+//     }
+//     else
+//     {
+//       receivedBuffer2[receivedBufferIndex2] = receivedChar2;
+//       receivedBufferIndex2++;
+//     }
+//   }
+//   return false;
+// }
+
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
-  if(strstr(receivedBuffer, "ENTER") != NULL || extInEnter(_enterCal))
+  if(strstr(receivedBuffer, "ENTER") != NULL)// || strstr(receivedBuffer2, "ENTER") != NULL)
     {modeIndex = 1;}
-  else if(strstr(receivedBuffer, "CAL:") != NULL)   
+  else if(strstr(receivedBuffer, "CAL:") != NULL)// || strstr(receivedBuffer2, "CAL:") != NULL)   
     {modeIndex = 2;} 
-  else if(strstr(receivedBuffer, "EXIT") != NULL || extInExit(_exitCal)) 
+  else if(strstr(receivedBuffer, "EXIT") != NULL)// || strstr(receivedBuffer2, "EXIT") != NULL) 
     {modeIndex = 3;}
   return modeIndex;
 }
 
+// boolean TDS::extInEnter(bool enterCal){
+//   return _enterCal = enterCal;
+// }
 
+// boolean TDS::extInCal(bool calMode){
+//   return _calMode = calMode;
+// }
 
-boolean TDS::extInEnter(bool enterCal){
-  return _enterCal = enterCal;
-}
-
-boolean TDS::extInCal(bool calMode){
-  return _calMode = calMode;
-}
-
-boolean TDS::extInExit(bool exitCal){
-  return _exitCal = exitCal;
-}
+// boolean TDS::extInExit(bool exitCal){
+//   return _exitCal = exitCal;
+// }
 
 void TDS::calibrationEC(byte mode)
 {
@@ -112,6 +141,7 @@ void TDS::calibrationEC(byte mode)
     finishCalEC = 0;
     Serial.println();
     Serial.println(F(">>>Enter Calibration Mode<<<"));
+    Serial.println(F(receivedBuffer2));
     Serial.println(F(">>>Please put the probe into the standard buffer solution!<<<"));
     Serial.println();
     break;
