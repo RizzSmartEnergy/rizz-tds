@@ -9,11 +9,7 @@ public:
     TDS(uint8_t pin, double vref, double aref);
     ~TDS();
     boolean serialDataTDS();
-    byte uartParsingTDS();
-    boolean extInEnter(bool enterCal);
-    boolean extInCal(bool exitCal);
-    boolean extInExit(bool exitCal);
-    //void deleteMemory(bool *enterStat);
+    boolean serial2DataTDS();
     void calibrationEC(byte mode);
     int getMedianTDS(int bArray[], int iFilterLen);
     void characteristicKVal();
