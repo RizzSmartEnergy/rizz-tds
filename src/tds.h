@@ -9,8 +9,8 @@ public:
     TDS(uint8_t pin, double vref, double aref);
     ~TDS();
     boolean serialDataTDS();
-   // boolean serial2DataTDS();
-    void convertStringToChar(const String &str, char *charArray, int maxLength);
+    boolean serial2DataTDS();
+    void stringToChar(String str, char charArray[]);
     void outputSerial2();
     byte uartParsingTDS();
     String extInEnter(String enterCal);
@@ -38,7 +38,6 @@ private:
     int _pin;
     double _vref, _aref;
     float _temp;
-    String _enterCal, _calMode, _exitCal;
 };  
 
 #endif
