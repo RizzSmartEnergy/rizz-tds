@@ -34,7 +34,7 @@ int analogBufferIndex = 0, copyIndex = 0;
 float kVal;
 float avgVolt;
 
-String receivedChar2;
+String receivedString2;
 
 TDS::TDS(uint8_t pin, double vref, double aref)
 {
@@ -75,66 +75,28 @@ boolean TDS::serialDataTDS()
   return false;
 }
 
-// boolean TDS::serial2DataTDS()
-// {
-//   char receivedChar2;
-//   static unsigned long receivedTimeOut2 = millis();
-//   while (Serial2.available())
-//   {
-//     if (millis() - receivedTimeOut2 > 500U)
-//     {
-//       receivedBufferIndex2 = 0;
-//       memset(receivedBuffer2, 0, (ReceivedBufferLength2 + 1));
-//     }
-//     receivedTimeOut2 = millis();
-//     receivedChar2 = char(Serial2.readString());
-//     if (receivedChar2 == '\n' || receivedBufferIndex2 == ReceivedBufferLength2)
-//     {
-//       receivedBufferIndex2 = 0;
-//       return true;
-//     }
-//     else
-//     {
-//       receivedBuffer2[receivedBufferIndex2] = receivedChar2;
-//       receivedBufferIndex2++;
-//     }
-//   }
-//   return false;
-// }
-
-void TDS::convertStringToChar(const String& str, char* charArray, int maxLength){
+void TDS::stringToChar(String str, char charArray[]){
   int length = str.length();
-  if(length > maxLength - 1){
-    length = maxLength - 1;
-  }
   for(int i = 0; i < length; i++){
     charArray[i] = str.charAt(i);
   }
-  charArray[length]='\0';
+  charArray[length]='\n';
 }
 
 void TDS::outputSerial2(){
-  // if(Serial2.available()){
-  //   delay(10);
-  //   }
-  receivedChar2 = Serial2.readString();
- // char dmdChar[20];
-  convertStringToChar(receivedChar2, receivedBuffer2, sizeof(receivedBuffer2));
-  Serial.println(receivedBuffer2);//}
-  //dmd="";
+  String receivedString2 = Serial2.readString();
+  stringToChar(receivedString2, receivedBuffer2);
+  Serial.println(receivedBuffer2);
 }
-
-
 
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
-  //const char *char1 = _enterCal;
   if(strstr(receivedBuffer, "ENTER") != NULL || strstr(receivedBuffer2, "ENTER") != NULL)
     {modeIndex = 1;}
-  else if(strstr(receivedBuffer, "CAL:") != NULL)// || strstr(receivedBuffer2, "CAL:") != NULL)   
+  else if(strstr(receivedBuffer, "CAL:") != NULL || strstr(receivedBuffer2, "CAL:") != NULL)   
     {modeIndex = 2;} 
-  else if(strstr(receivedBuffer, "EXIT") != NULL)// || strstr(receivedBuffer2, "EXIT") != NULL) 
+  else if(strstr(receivedBuffer, "EXIT") != NULL || strstr(receivedBuffer2, "EXIT") != NULL)
     {modeIndex = 3;}
   return modeIndex;
 }
@@ -142,14 +104,6 @@ byte TDS::uartParsingTDS()
 String TDS::extInEnter(String enterCal){
   return _enterCal = enterCal;
 }
-
-// boolean TDS::extInCal(bool calMode){
-//   return _calMode = calMode;
-// }
-
-// boolean TDS::extInExit(bool exitCal){
-//   return _exitCal = exitCal;
-// }
 
 void TDS::calibrationEC(byte mode)
 {
@@ -168,19 +122,18 @@ void TDS::calibrationEC(byte mode)
     finishCalEC = 0;
     Serial.println();
     Serial.println(F(">>>Enter Calibration Mode<<<"));
-    Serial.println(F(receivedBuffer2));
     Serial.println(F(">>>Please put the probe into the standard buffer solution!<<<"));
     Serial.println();
     break;
 
   case 2:
-    receivedBufferPtr = strstr(receivedBuffer, "CAL:");
+    receivedBufferPtr = strstr(receivedBuffer2, "CAL:");
     receivedBufferPtr += strlen("CAL:");
     rawECsolution = strtod(receivedBufferPtr, NULL) / (float)(TDSFactor);
     rawECsolution = rawECsolution * temperatureCompensation();
     if (enterCalMode)
     {
-      KValueTemp = rawECsolution / compensatedVoltage(); // calibrate in the  buffer solution, such as 707ppm(1413us/cm)@25^c
+      KValueTemp = rawECsolution / compensatedVoltage();
       if ((rawECsolution > 0) && (rawECsolution < 2000) && (KValueTemp > 0.25) && (KValueTemp < 4.0))
       {
         Serial.println();
