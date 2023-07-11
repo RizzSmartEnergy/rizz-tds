@@ -9,7 +9,11 @@ public:
     TDS(uint8_t pin, double vref, double aref);
     ~TDS();
     boolean serialDataTDS();
-    boolean serial2DataTDS();
+   // boolean serial2DataTDS();
+    void convertStringToChar(const String &str, char *charArray, int maxLength);
+    void outputSerial2();
+    byte uartParsingTDS();
+    String extInEnter(String enterCal);
     void calibrationEC(byte mode);
     int getMedianTDS(int bArray[], int iFilterLen);
     void characteristicKVal();
@@ -34,7 +38,7 @@ private:
     int _pin;
     double _vref, _aref;
     float _temp;
-    bool _enterCal, _calMode, _exitCal;
+    String _enterCal, _calMode, _exitCal;
 };  
 
 #endif
