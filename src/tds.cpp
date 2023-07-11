@@ -34,6 +34,8 @@ int analogBufferIndex = 0, copyIndex = 0;
 float kVal;
 float avgVolt;
 
+String receivedChar2;
+
 TDS::TDS(uint8_t pin, double vref, double aref)
 {
   _pin = pin;
@@ -85,8 +87,8 @@ boolean TDS::serialDataTDS()
 //       memset(receivedBuffer2, 0, (ReceivedBufferLength2 + 1));
 //     }
 //     receivedTimeOut2 = millis();
-//     receivedChar2 = Serial2.read();
-//     if (receivedChar2 == 'ENTER' || receivedBufferIndex2 == ReceivedBufferLength2)
+//     receivedChar2 = char(Serial2.readString());
+//     if (receivedChar2 == '\n' || receivedBufferIndex2 == ReceivedBufferLength2)
 //     {
 //       receivedBufferIndex2 = 0;
 //       return true;
@@ -100,10 +102,35 @@ boolean TDS::serialDataTDS()
 //   return false;
 // }
 
+void TDS::convertStringToChar(const String& str, char* charArray, int maxLength){
+  int length = str.length();
+  if(length > maxLength - 1){
+    length = maxLength - 1;
+  }
+  for(int i = 0; i < length; i++){
+    charArray[i] = str.charAt(i);
+  }
+  charArray[length]='\0';
+}
+
+void TDS::outputSerial2(){
+  // if(Serial2.available()){
+  //   delay(10);
+  //   }
+  receivedChar2 = Serial2.readString();
+ // char dmdChar[20];
+  convertStringToChar(receivedChar2, receivedBuffer2, sizeof(receivedBuffer2));
+  Serial.println(receivedBuffer2);//}
+  //dmd="";
+}
+
+
+
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
-  if(strstr(receivedBuffer, "ENTER") != NULL)// || strstr(receivedBuffer2, "ENTER") != NULL)
+  //const char *char1 = _enterCal;
+  if(strstr(receivedBuffer, "ENTER") != NULL || strstr(receivedBuffer2, "ENTER") != NULL)
     {modeIndex = 1;}
   else if(strstr(receivedBuffer, "CAL:") != NULL)// || strstr(receivedBuffer2, "CAL:") != NULL)   
     {modeIndex = 2;} 
@@ -112,9 +139,9 @@ byte TDS::uartParsingTDS()
   return modeIndex;
 }
 
-// boolean TDS::extInEnter(bool enterCal){
-//   return _enterCal = enterCal;
-// }
+String TDS::extInEnter(String enterCal){
+  return _enterCal = enterCal;
+}
 
 // boolean TDS::extInCal(bool calMode){
 //   return _calMode = calMode;
@@ -314,7 +341,7 @@ float TDS::getSalinity()
 
 void TDS::modeTDS()
 {
-  if (serialDataTDS() > 0)
+  if (serialDataTDS() > 0 || receivedBuffer2 != NULL)
   {
     byte modeIndex = uartParsingTDS();
     calibrationEC(modeIndex);
