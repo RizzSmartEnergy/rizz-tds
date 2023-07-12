@@ -9,7 +9,6 @@ public:
     TDS(uint8_t pin, double vref, double aref);
     ~TDS();
     boolean serialDataTDS();
-    boolean serial2DataTDS();
     void stringToChar(String str, char charArray[]);
     void outputSerial2();
     byte uartParsingTDS();
