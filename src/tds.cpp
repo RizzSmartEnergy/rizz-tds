@@ -75,29 +75,52 @@ boolean TDS::serialDataTDS()
   return false;
 }
 
-void TDS::stringToChar(String str, char charArray[]){
+void TDS::stringToChar(String str, char charArray[])
+{
   int length = str.length();
-  for(int i = 0; i < length; i++){
+  for (int i = 0; i < length; i++)
+  {
     charArray[i] = str.charAt(i);
   }
-  charArray[length]='\n';
+  charArray[length] = '\n';
 }
 
-void TDS::outputSerial2(){
-  String receivedString2 = Serial2.readString();
-  stringToChar(receivedString2, receivedBuffer2);
-  Serial.println(receivedBuffer2);
+  
+void TDS::outputSerial2()
+{
+  // String receivedString2 = Serial2.readString();
+  // stringToChar(receivedString2, receivedBuffer2);
+  // Serial.println(receivedBuffer2);
+  String receivedString2="";
+  if (Serial2.available())
+  {
+    delay(30);
+    while (Serial2.available())
+    {
+      receivedString2 += char(Serial2.read());
+      // Serial2.write(0xff);
+      // Serial2.write(0xff);
+      // Serial2.write(0xff);
+    }
+      Serial.println(receivedString2);
+  }
 }
 
 byte TDS::uartParsingTDS()
 {
   byte modeIndex = 0;
-  if(strstr(receivedBuffer, "ENTER") != NULL || strstr(receivedBuffer2, "ENTER") != NULL)
-    {modeIndex = 1;}
-  else if(strstr(receivedBuffer, "CAL:") != NULL || strstr(receivedBuffer2, "CAL:") != NULL)   
-    {modeIndex = 2;} 
-  else if(strstr(receivedBuffer, "EXIT") != NULL || strstr(receivedBuffer2, "EXIT") != NULL)
-    {modeIndex = 3;}
+  if (strstr(receivedBuffer, "ENTER") != NULL || strstr(receivedBuffer2, "ENTER") != NULL)
+  {
+    modeIndex = 1;
+  }
+  else if (strstr(receivedBuffer, "CAL:") != NULL || strstr(receivedBuffer2, "CAL:") != NULL)
+  {
+    modeIndex = 2;
+  }
+  else if (strstr(receivedBuffer, "EXIT") != NULL || strstr(receivedBuffer2, "EXIT") != NULL)
+  {
+    modeIndex = 3;
+  }
   return modeIndex;
 }
 
@@ -220,7 +243,7 @@ float TDS::analogTDS()
 
 float TDS::voltageTDS()
 {
-  return (analogTDS() * _vref) / (1000 * _aref);
+  return (analogTDS() * _vref) / _aref;
 }
 
 float TDS::samplingTDS()
@@ -280,12 +303,12 @@ float TDS::getTDS()
 
 float TDS::getResistivity()
 {
-  return (getEC() == 0)? 0 : 1000 / getEC();
+  return (getEC() == 0) ? 0 : 1000 / getEC();
 }
 
 float TDS::getSalinity()
 {
-  return 0.4665*(pow((getEC()/1000),1.0878));
+  return 0.4665 * (pow((getEC() / 1000), 1.0878));
 }
 
 void TDS::modeTDS()
@@ -322,4 +345,5 @@ void TDS::run()
 {
   samplingTDS();
   modeTDS();
+  outputSerial2();
 }
