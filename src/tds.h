@@ -13,7 +13,6 @@ public:
     void stringToChar(String str, char charArray[]);
     void outputSerial2();
     byte uartParsingTDS();
-    String extInEnter(String enterCal);
     void calibrationEC(byte mode);
     int getMedianTDS(int bArray[], int iFilterLen);
     void characteristicKVal();
