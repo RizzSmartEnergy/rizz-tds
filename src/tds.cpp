@@ -101,10 +101,6 @@ byte TDS::uartParsingTDS()
   return modeIndex;
 }
 
-String TDS::extInEnter(String enterCal){
-  return _enterCal = enterCal;
-}
-
 void TDS::calibrationEC(byte mode)
 {
   char *receivedBufferPtr;
