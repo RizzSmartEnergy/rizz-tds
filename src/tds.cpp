@@ -285,7 +285,7 @@ float TDS::getResistivity()
 
 float TDS::getSalinity()
 {
-  return 1.4;
+  return 0.4665*(pow((getEC()/1000),1.0878));
 }
 
 void TDS::modeTDS()
