@@ -91,9 +91,10 @@ void TDS::outputSerial2()
   // String receivedString2 = Serial2.readString();
   // stringToChar(receivedString2, receivedBuffer2);
   // Serial.println(receivedBuffer2);
-  String receivedString2="";
+  
   if (Serial2.available())
   {
+    String receivedString2="";
     delay(30);
     while (Serial2.available())
     {
@@ -104,6 +105,7 @@ void TDS::outputSerial2()
     }
       Serial.println(receivedString2);
   }
+  stringToChar(receivedString2, receivedBuffer2);
 }
 
 byte TDS::uartParsingTDS()
