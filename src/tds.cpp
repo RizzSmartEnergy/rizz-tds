@@ -88,20 +88,13 @@ void TDS::stringToChar(String str, char charArray[])
   
 void TDS::outputSerial2()
 {
-  // String receivedString2 = Serial2.readString();
-  // stringToChar(receivedString2, receivedBuffer2);
-  // Serial.println(receivedBuffer2);
-  
+    String receivedString2="";
   if (Serial2.available())
   {
-    String receivedString2="";
     delay(30);
     while (Serial2.available())
     {
       receivedString2 += char(Serial2.read());
-      // Serial2.write(0xff);
-      // Serial2.write(0xff);
-      // Serial2.write(0xff);
     }
       Serial.println(receivedString2);
   }
