@@ -20,9 +20,7 @@
 char receivedBuffer[ReceivedBufferLength + 1];
 byte receivedBufferIndex = 0;
 
-#define ReceivedBufferLength2 20
-char receivedBuffer2[ReceivedBufferLength2 + 1];
-byte receivedBufferIndex2 = 0;
+char receivedBuffer2[ReceivedBufferLength + 1];
 
 #define SCOUNT 30
 int analogBuffer[SCOUNT];
@@ -88,7 +86,7 @@ void TDS::stringToChar(String str, char charArray[])
   
 void TDS::outputSerial2()
 {
-    String receivedString2="";
+  String receivedString2="";
   if (Serial2.available())
   {
     delay(30);
