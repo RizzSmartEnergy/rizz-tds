@@ -18,9 +18,8 @@
 
 #define ReceivedBufferLength 20
 char receivedBuffer[ReceivedBufferLength + 1];
-byte receivedBufferIndex = 0;
-
 char receivedBuffer2[ReceivedBufferLength + 1];
+byte receivedBufferIndex = 0;
 
 #define SCOUNT 30
 int analogBuffer[SCOUNT];
